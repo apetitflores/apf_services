@@ -5,9 +5,10 @@
  */
 
 var app = require('../app');
-var socket = require('../socket');
-var debug = require('debug')('amplex:server');
+var socketChat = require('../sockets/chat');
+var debug = require('debug')('apf_services:server');
 var http = require('http');
+var os = require('os');
 
 /**
  * Get port from environment and store in Express.
@@ -108,9 +109,20 @@ function onListening() {
  * Connecting the socket to the server.
  */
 
-socket.attach(serverSocket, {
+var nets = os.networkInterfaces();
+var origins = [];
+
+for (const name of Object.keys(nets)) {
+  origins.push(`http://${nets[name][1].address}:3000`);
+  origins.push(`http://${nets[name][1].address}:8080`);
+}
+
+origins.push('http://localhost:3000');
+origins.push('http://localhost:8080');
+
+socketChat.attach(serverSocket, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:8080"],
+    origin: origins,
     methods: ["GET"]
   }
 });
